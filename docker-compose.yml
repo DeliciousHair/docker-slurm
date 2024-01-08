@@ -30,31 +30,29 @@ x-defaults-build-root:
     - USER_PRIVILEGE_LEVEL=root
 
 services:
-  base:
-    << : *default-settings
-    image: ${DOCKER_HUB_REPO}:${TAG_BASE_STANDARD}
-    container_name: slurm-${TAG_BASE_STANDARD}
-  base-root:
-    << : *default-settings
-    image: ${DOCKER_HUB_REPO}:${TAG_BASE_ROOT}
-    container_name: slurm-${TAG_BASE_ROOT}
+  psrc_db:
+    image: mysql:latest
+    hostname: slurm_db
+    container_name: slurm_db
+    ports:
+      - 3306:3306
+      
+    # NOTE:
+    # use of "mysql_native_password" is not recommended:
+    #   https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
+    #
+    # This configuration assumes local EDA use only, NEVER use this approach
+    # in production.
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=H3ll012Three
+    volumes:
+      - type: bind
+        source: ./slurm_db
+        target: /var/lib/mysql/
+      - ./sql-scripts:/docker-entrypoint-initdb.d
 
-  full:
-    << : *default-settings
-    image: ${DOCKER_HUB_REPO}:${TAG_FULL_STANDARD}
-    container_name: slurm-${TAG_FULL_STANDARD}
-  full-root:
-    << : *default-settings
-    image: ${DOCKER_HUB_REPO}:${TAG_FULL_ROOT}
-    container_name: slurm-${TAG_FULL_ROOT}
-
-  build-base:
-    << : *default-settings
-    build:
-      context: ./dockerfile_base
-      << : *default-build-args-standard
-    image: ${DOCKER_HUB_REPO}:${TAG_BASE_STANDARD}
-    container_name: slurm-${TAG_BASE_STANDARD}
   build-base-root:
     << : *default-settings
     build:
@@ -62,18 +60,3 @@ services:
       << : *default-build-args-root
     image: ${DOCKER_HUB_REPO}:${TAG_BASE_ROOT}
     container_name: slurm-${TAG_BASE_ROOT}
-
-  build-full:
-    << : *default-settings
-    build:
-      context: ./dockerfile_full
-      << : *default-build-args-standard
-    image: ${DOCKER_HUB_REPO}:${TAG_FULL_STANDARD}
-    container_name: slurm-${TAG_FULL_STANDARD}
-  build-full-root:
-    << : *default-settings
-    build:
-      context: ./dockerfile_full
-      << : *default-build-args-root
-    image: ${DOCKER_HUB_REPO}:${TAG_FULL_ROOT}
-    container_name: slurm-${TAG_FULL_ROOT}
