@@ -56,7 +56,7 @@ services:
   build-base-root:
     << : *default-settings
     build:
-      context: ./dockerfile_base
+      context: ./base
       << : *default-build-args-root
     image: ${DOCKER_HUB_REPO}:${TAG_BASE_ROOT}
     container_name: slurm-${TAG_BASE_ROOT}
