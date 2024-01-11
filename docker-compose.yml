@@ -30,7 +30,7 @@ x-defaults-build-root:
     - USER_PRIVILEGE_LEVEL=root
 
 services:
-  psrc_db:
+  slurm_db:
     image: mysql:latest
     hostname: slurm_db
     container_name: slurm_db
