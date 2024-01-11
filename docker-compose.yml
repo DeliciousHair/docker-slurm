@@ -43,7 +43,7 @@ services:
     #
     # This configuration assumes local EDA use only, NEVER use this approach
     # in production.
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=4096M --innodb-log-file-size=64M --innodb-lock-wait-timeout=900
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=H3ll012Three
