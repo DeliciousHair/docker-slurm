@@ -6,7 +6,7 @@ daemon running.
 
 ## run
 ```script
-$ docker compose buid
+$ docker compose build
 $ docker compose up
 ```
 
