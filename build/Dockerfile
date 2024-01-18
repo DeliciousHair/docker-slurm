@@ -58,5 +58,3 @@ EXPOSE 6819
 
 # Set working directory and default command when running container
 WORKDIR /root
-# CMD /etc/${TIMEZONE} ; /bin/bash -l
-
