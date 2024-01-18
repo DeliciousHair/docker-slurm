@@ -1,15 +1,20 @@
 version: "3.8"
 
-x-defaults:
-  &default-settings
-  hostname: ${CONTAINER_HOSTNAME}
+x-defaults-ctld:
+  &default-ctld-settings
+  hostname: ${SLURMCTLD_CONTAINER_HOSTNAME}
+  tty: true
+  
+x-defaults-dbd:
+  &default-dbd-settings
+  hostname: ${SLURMDBD_CONTAINER_HOSTNAME}
   tty: true
 
-x-defaults-build-root:
-  &default-build-args-root
+x-defaults-build:
+  &default-build-args
   args:
     - BASE_DOCKER_REPO=${DOCKER_HUB_REPO}
-    - BASE_TAG=${TAG_BASE_ROOT}
+    - BASE_TAG=${TAG}
     - UBUNTU_VERSION=${CONTAINER_UBUNTU_VERSION}
     - USERNAME=${CONTAINER_USERNAME}
     - PASSWORD=${CONTAINER_PASSWORD}
@@ -41,10 +46,20 @@ services:
         target: /var/lib/mysql/
       - ./sql-scripts:/docker-entrypoint-initdb.d
 
-  slurm_node:
-    << : *default-settings
+  slurm_ctld:
+    << : *default-ctld-settings
     build:
-      context: ./base
-      << : *default-build-args-root
-    image: ${DOCKER_HUB_REPO}:${TAG_BASE_ROOT}
-    container_name: slurm-${TAG_BASE_ROOT}
+      context: ./build
+      << : *default-build-args
+    image: ${DOCKER_HUB_REPO}:${TAG}-ctld
+    container_name: slurmctld-${TAG}
+    command: supervisord -c /etc/supervisor/conf.d/supervisord-ctld.conf
+    
+  slurm_dbd:
+    << : *default-dbd-settings
+    build:
+      context: ./build
+      << : *default-build-args
+    image: ${DOCKER_HUB_REPO}:${TAG}-dbd
+    container_name: slurmdbd-${TAG}
+    command: supervisord -c /etc/supervisor/conf.d/supervisord-dbd.conf

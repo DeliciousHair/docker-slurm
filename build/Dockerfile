@@ -4,6 +4,7 @@ ARG USER_PRIVILEGE_LEVEL
 # Settings for all images
 ARG TIMEZONE
 ARG UBUNTU_VERSION
+ARG SCRIPT
 
 # Settings for standard user images
 ARG USERNAME
@@ -33,7 +34,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
     apt -y install \
         munge \
         slurm-wlm \
-        slurmdbd
+        slurmdbd \
+        supervisor
 
 # Slurm configuration
 COPY slurm.conf /etc/slurm/slurm.conf
@@ -43,9 +45,18 @@ RUN mkdir -p /var/spool/slurmctld \
     && chown root:root /var/spool/slurmctld
 
 # Startup configuration
-COPY startup.sh /etc/startup.sh
-RUN chmod 555 /etc/startup.sh
+COPY startup_ctld.sh /etc/startup_ctld.sh
+COPY startup_dbd.sh /etc/startup_dbd.sh
+RUN chmod 555 /etc/startup_*
+
+ADD supervisord-ctld.conf /etc/supervisor/conf.d/supervisord-ctld.conf
+ADD supervisord-dbd.conf /etc/supervisor/conf.d/supervisord-dbd.conf
+
+EXPOSE 6817
+EXPOSE 6818
+EXPOSE 6819
 
 # Set working directory and default command when running container
 WORKDIR /root
-CMD /etc/startup.sh ; /bin/bash -l
+# CMD /etc/${TIMEZONE} ; /bin/bash -l
+
