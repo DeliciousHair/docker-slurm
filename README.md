@@ -9,12 +9,13 @@ risks and limitations that may involve.
 
 ## Who is this for?
 The scenario:
-* You have been asked to do forensic analysis of activity data--no problem.
+* You have been asked to do a forensic analysis of activity data--no problem.
 * The activity data is shipped as a MySQL database dump--no problem.
-* The database and all the data was created and populated by [slurm][slurm-page].
+* The database and all the data was created and populated by
+  [slurm][slurm-page]--uh oh.
 
-For mere mortals like myself, the last point is a bit of an issue since
-the table structure that slurm has developed works well with [sacct][sacct-page],
+For mere mortals like myself, the last point is a bit of an issue since the
+table structures that slurm has developed works well with [sacct][sacct-page],
 but not as well for us bald apes.
 
 This project solves this problem by providing a containerized instance of the
@@ -28,7 +29,8 @@ of the containers to the world at large if you care about your data at all.
 
 ## Usage
 We assume that a MySQL dump file has been provided. Connecting this container
-to an existing MySQL database is beyond the scope of this work.
+to an existing MySQL database as a non-root user is beyond the scope of this
+work.
 
 ### Create a database
 Use the official MySQL docker image to make use of the database dump first:
