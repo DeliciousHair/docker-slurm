@@ -2,10 +2,10 @@
 
 This was originally a fork of [a similar project][source-repo], but it has been
 altered to the point of being completely different and became it's own thing.
-The purpose of this container is to provide a containerised means of accessing
-existing slurm accounting data for (possibly offline) analytics without having
-to use [sacct][sacct-page] on a production system and all the possible risks
-that can involve.
+The purpose of this work is to provide a containerised means of accessing
+existing slurm accounting data for (possibly offline) analytics work without
+having to use [sacct][sacct-page] on a production system with all the possible
+risks and limitations that may involve.
 
 ## Who is this for?
 The scenario:
@@ -27,9 +27,8 @@ of the containers to the world at large if you care about your data at all.
 **You have been warned**.
 
 ## Usage
-We assume that a dump file has been provided of some accounting system.
-Connecting this container to an existing MySQL database is beyond the scope
-of this work.
+We assume that a MySQL dump file has been provided. Connecting this container
+to an existing MySQL database is beyond the scope of this work.
 
 ### Create a database
 Use the official MySQL docker image to make use of the database dump first:
@@ -47,7 +46,7 @@ Secure? Not even close! But that is OK becasue this is only for experimental
 purposes, right?
 
 Verify that the `slurm_data` database exists and is accessible by `root`. This
-step is especially important if you have changed any of these details:
+step is especially important if you have changed any of the above details:
 ```script
 $ docker run -it \
 >  --network docker-slurm_default \
@@ -73,11 +72,11 @@ Bye
 
 Fantastic! We now populate `slurm_data` with our dump data:
 ```script
-$ docker exec -i slurm_db sh -c 'exec mysql -uroot -pH3ll012Three -Dslurm_data' < /path/to/database/dump
+$ docker exec -i slurm_db sh -c 'exec mysql -uroot -pH3ll012Three -Dslurm_data' < /path/to/the/database/dump
 ```
 
-Depending on the size of the data and the speed of your hardware, this step can
-take anywhere from a few minutes to several days or more.
+Depending on the size of the data and the speed of your hardware, this step
+may take anywhere from a few minutes to several days or more.
 
 Once the process completes, be sure to to shut down the container:
 ```script
@@ -97,17 +96,17 @@ $ docker compose build
 $ docker compose up -d
 ```
 
-The containers use `supervisord` in an ad-hoc manner to initialize so it can
-take up to a minute or so for the services to settle in and function correctly.
-Once this happens, you can run `sacct` queries on the `slurmdbd` container.
-For example:
+The slurm container(s) use `supervisord` in an ad-hoc manner to initialize 
+the services, so it can take up to a minute or so for the services to settle
+in and function correctly. Once this happens, you can run `sacct` queries on
+the `slurmdbd` container. For example:
 ```script
 $ docker exec slurmdbd-root-build \
 > sacct -X -P -a -M all \
 > -S 2023-04-01T00:00:00 \
 > -E 2023-04-01T01:00:00 \
 > -o UID,JobID,NCPUS,NNodes,Submit,End,State,ConsumedEnergy,CPUTime \
-> > demo_return.psv
+> > demo_response.psv
 ```
 
 This allows you to then use your favorite analytics tools on the resulting CSV
@@ -116,7 +115,7 @@ data. For example:
 import polars as pl
 
 pl.read_csv(
-    "demo_return.psv",
+    "demo_response.psv",
     separator="|",
     infer_schema_length=10_000,
 )
