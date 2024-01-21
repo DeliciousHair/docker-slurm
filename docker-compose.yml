@@ -1,9 +1,14 @@
 version: "3.8"
 
-x-defaults-ctld:
-  &default-ctld-settings
-  hostname: ${SLURMCTLD_CONTAINER_HOSTNAME}
-  tty: true
+# x-defaults-ctld:
+#   &default-ctld-settings
+#   hostname: ${SLURMCTLD_CONTAINER_HOSTNAME}
+#   tty: true
+  
+# x-defaults-compute:
+#   &default-compute-settings
+#   hostname: ${SLURMD_CONTAINER_HOSTNAME}
+#   tty: true
   
 x-defaults-dbd:
   &default-dbd-settings
@@ -27,16 +32,15 @@ services:
     image: mysql:latest
     hostname: slurm_db
     container_name: slurm_db
-    ports:
-      - 3306:3306
       
     # NOTE:
     # use of "mysql_native_password" is not recommended:
     #   https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
     #
-    # This configuration assumes local EDA use only, NEVER use this approach
-    # in production.
-    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=4096M --innodb-log-file-size=64M --innodb-lock-wait-timeout=900
+    # This configuration assumes local EDA/DEV/etc. use only; NEVER use this 
+    # approach in production. You have been warned!
+    # command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=4096M --innodb-log-file-size=64M --innodb-lock-wait-timeout=900
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=4096M --innodb-redo-log-capacity=256M --innodb-lock-wait-timeout=900
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=H3ll012Three
@@ -46,14 +50,27 @@ services:
         target: /var/lib/mysql/
       - ./sql-scripts:/docker-entrypoint-initdb.d
 
-  slurm_ctld:
-    << : *default-ctld-settings
-    build:
-      context: ./build
-      << : *default-build-args
-    image: ${DOCKER_HUB_REPO}:${TAG}-ctld
-    container_name: slurmctld-${TAG}
-    command: supervisord -c /etc/supervisor/conf.d/supervisord-ctld.conf
+  # slurm_ctld:
+  #   << : *default-ctld-settings
+  #   build:
+  #     context: ./build
+  #     << : *default-build-args
+  #   image: ${DOCKER_HUB_REPO}:${TAG}-ctld
+  #   container_name: slurmctld-${TAG}
+  #   depends_on:
+  #     - slurm_db
+  #   command: supervisord -c /etc/supervisor/conf.d/supervisord-ctld.conf
+  
+  # slurm_compute:
+  #   << : *default-compute-settings
+  #   build:
+  #     context: ./build
+  #     << : *default-build-args
+  #   image: ${DOCKER_HUB_REPO}:${TAG}-compute
+  #   container_name: slurmd-${TAG}
+  #   depends_on:
+  #     - slurm_db
+  #   command: supervisord -c /etc/supervisor/conf.d/supervisord-compute.conf
     
   slurm_dbd:
     << : *default-dbd-settings
@@ -62,4 +79,6 @@ services:
       << : *default-build-args
     image: ${DOCKER_HUB_REPO}:${TAG}-dbd
     container_name: slurmdbd-${TAG}
+    depends_on:
+      - slurm_db
     command: supervisord -c /etc/supervisor/conf.d/supervisord-dbd.conf
