@@ -35,8 +35,8 @@ work.
 ### Create a database
 Use the official MySQL docker image to make use of the database dump first:
 ```script
-$ docker compose build -f docker-compose-db-setup.yml
-$ docker compose up -d -f docker-compose-db-setup.yml
+$ docker compose -f docker-compose-db-setup.yml build
+$ docker compose -f docker-compose-db-setup.yml up -d
 ```
 
 This will create a database:
@@ -82,7 +82,7 @@ may take anywhere from a few minutes to several days or more.
 
 Once the process completes, be sure to to shut down the container:
 ```script
-$ docker compose down -f docker-compose-db-setup.yml
+$ docker compose -f docker-compose-db-setup.yml down
 ```
 
 ### Explore your data
