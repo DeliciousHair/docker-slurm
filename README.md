@@ -35,8 +35,8 @@ work.
 ### Create a database
 Use the official MySQL docker image to make use of the database dump first:
 ```script
-$ docker compose -f docker-compose-db-setup.yml build
-$ docker compose -f docker-compose-db-setup.yml up -d
+docker compose -f docker-compose-db-setup.yml build && \
+docker compose -f docker-compose-db-setup.yml up -d
 ```
 
 This will create a database:
@@ -49,18 +49,17 @@ purposes, right?
 
 Verify that the `slurm_data` database exists and is accessible by `root`. This
 step is especially important if you have changed any of the above details:
-```script
+```notcode
 $ docker run -it \
->  --network docker-slurm_default \
->  --rm \
->  mysql:latest \
->  mysql -hslurm_db -Dslurm_data -uroot -pH3ll012Three
+> --network docker-slurm_default \
+> mysql:9.0 \
+> mysql -hslurm_db -Dslurm_data -uroot -pH3ll012Three
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 8
-Server version: 8.2.0 MySQL Community Server - GPL
+Server version: 9.0.0 MySQL Community Server - GPL
 
-Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -74,7 +73,7 @@ Bye
 
 Fantastic! We now populate `slurm_data` with our dump data:
 ```script
-$ docker exec -i slurm_db sh -c 'exec mysql -uroot -pH3ll012Three -Dslurm_data' < /path/to/the/database/dump
+docker exec -i slurm_db sh -c 'exec mysql -uroot -pH3ll012Three -Dslurm_data' < /path/to/the/database/dump
 ```
 
 Depending on the size of the data and the speed of your hardware, this step
@@ -82,7 +81,7 @@ may take anywhere from a few minutes to several days or more.
 
 Once the process completes, be sure to to shut down the container:
 ```script
-$ docker compose -f docker-compose-db-setup.yml down
+docker compose -f docker-compose-db-setup.yml down
 ```
 
 ### Explore your data
@@ -94,15 +93,15 @@ changes.
 
 Build and start the containers:
 ```script
-$ docker compose build
-$ docker compose up -d
+docker compose build && \
+docker compose up -d
 ```
 
 The slurm container(s) use `supervisord` in an ad-hoc manner to initialize 
 the services, so it can take up to a minute or so for the services to settle
 in and function correctly. Once this happens, you can run `sacct` queries on
 the `slurmdbd` container. For example:
-```script
+```notcode
 $ docker exec slurmdbd-root-build \
 > sacct -X -P -a -M all \
 > -S 2023-04-01T00:00:00 \
