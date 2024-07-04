@@ -99,7 +99,10 @@ docker compose up -d
 
 The slurm container(s) use `supervisord` in an ad-hoc manner to initialize 
 the services, so it can take up to a minute or so for the services to settle
-in and function correctly. Once this happens, you can run `sacct` queries on
+in and function correctly.
+
+
+Once this happens, you can run `sacct` queries on
 the `slurmdbd` container. For example:
 ```notcode
 $ docker exec slurmdbd-root-build \
@@ -110,8 +113,16 @@ $ docker exec slurmdbd-root-build \
 > > demo_response.psv
 ```
 
-This allows you to then use your favorite analytics tools on the resulting CSV
-data. For example:
+It is worth noting that the first time the `slurmdbd-root-build` container is
+run, it may quietly do a large, slow optimization process on the database tables.
+The only indication of this happening is via the logs at `/var/log/slurmdbd.log`
+(on the container). During this process `sacct` queries will fail with a rather
+uninformative `Connection refused` error. If this happens, simply wait and keep
+an eye on the logs--the process can take minutes to hours or more depending on
+hardware and the size of the database.
+
+Once `sacct` queries can be run, the above example allows you to use your
+favorite analytics tools on the resulting CSV data. For example:
 ```python
 import polars as pl
 
